@@ -63,7 +63,6 @@ async function login() {
 
             if (detections.length > 0) {
                 alert("Rosto reconhecido! Acesso permitido.");
-                // Enviar mensagem para outra página usando window.postMessage
                 window.postMessage({ msg: 'Login bem-sucedido' }, '*');
                 window.location.href = 'dashboard.html';  // Redireciona para o painel de controle
             } else {
