@@ -1,10 +1,11 @@
-// Carregar os modelos necessários
+// Carregar os modelos do CDN
 Promise.all([
-    faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
-    faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
-    faceapi.nets.faceRecognitionNet.loadFromUri('/models')
+    faceapi.nets.tinyFaceDetector.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights'),
+    faceapi.nets.faceLandmark68Net.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights'),
+    faceapi.nets.faceRecognitionNet.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights')
 ]).then(startVideo);
 
+// Iniciar o vídeo da câmera para captura facial
 function startVideo() {
     const video = document.getElementById('video');
     navigator.getUserMedia(
@@ -14,6 +15,7 @@ function startVideo() {
     );
 }
 
+// Função para cadastrar biometria
 async function cadastrarBiometria() {
     const video = document.getElementById('video');
     video.style.display = 'block'; // Exibe o vídeo para captura
@@ -35,6 +37,7 @@ async function cadastrarBiometria() {
     });
 }
 
+// Função para login usando reconhecimento facial
 async function login() {
     const video = document.getElementById('video');
     video.style.display = 'block'; // Exibe o vídeo para reconhecimento
