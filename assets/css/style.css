@@ -1,20 +1,61 @@
+/* Estilos globais */
 body {
-    display: flex;
-    justify-content: flex-end; /* Alinha o conteúdo à direita */
-    align-items: center;
-    height: 100vh;
-    margin: 0;
+    font-family: Arial, sans-serif;
     background-image: url('fundo.png');
     background-size: cover;
     background-position: center;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
 }
 
+/* Cabeçalho */
+.header {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    color: white;
+    text-align: right;
+}
+
+/* Container do acesso biométrico */
 .container {
     background-color: rgba(255, 255, 255, 0.9);
     border-radius: 10px;
     padding: 2rem;
-    margin-right: 5rem; /* Ajuste conforme necessário para espaçamento */
+    max-width: 400px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     text-align: center;
+    margin-right: 5rem; /* Mantém alinhamento à direita */
+}
+
+/* Títulos */
+h1 {
+    color: #333;
+    margin-bottom: 1rem;
+}
+
+/* Estilo dos botões */
+button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    margin: 0.5rem 0;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%; /* Botões ocupam toda a largura disponível */
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #45a049; /* Cor de fundo ao passar o mouse */
+}
+
+/* Estilo do vídeo */
+#video {
+    width: 100%;
     max-width: 400px;
+    border-radius: 4px;
+    margin-top: 1rem;
 }
