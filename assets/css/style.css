@@ -1,82 +1,40 @@
-/* Estilos globais */
-body, html {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    font-family: Arial, sans-serif;
-    background-image: url('../fundo.png'); /* Caminho da imagem de fundo */
-    background-size: cover;
-    background-position: center;
+/* Estilos do Modal */
+.modal {
+    display: none; 
+    position: fixed;
+    z-index: 1; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    background-color: rgba(0, 0, 0, 0.5); 
 }
 
-.header {
-    position: absolute;
-    top: 10px;
-    right: 20px;
-    text-align: right;
-    color: white;
-}
-
-.header h1 {
-    margin: 0;
-    font-size: 24px;
-}
-
-.header p {
-    margin: 0;
-    font-size: 12px;
-}
-
-/* Estilos da caixa de login */
-.login-box {
-    position: absolute;
-    top: 50%;
-    right: 20%;
-    transform: translateY(-50%);
-    background-color: rgba(255, 255, 255, 0.8);
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
     padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    border: 1px solid #888;
+    width: 40%; 
     text-align: center;
-    width: 300px;
 }
 
-.login-box h2 {
-    margin-bottom: 20px;
-    font-size: 24px;
-    color: #333;
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
 }
 
-.login-box button {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    font-size: 16px;
-    border: none;
-    border-radius: 5px;
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
     cursor: pointer;
 }
 
-.login-box .login-btn {
-    background-color: #4CAF50;
-    color: white;
-}
-
-.login-box .biometria-btn {
-    background-color: #008CBA;
-    color: white;
-}
-
-.login-box button:hover {
-    opacity: 0.9;
-}
-
-/* Estilos do vídeo */
 #video {
-    display: none;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 320px;
-    height: 240px;
+    width: 100%;
+    height: auto;
+    margin-bottom: 15px;
 }
