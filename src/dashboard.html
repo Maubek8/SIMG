@@ -14,5 +14,15 @@
         <p>Bem-vindo ao SIMGEs!</p>
     </div>
 
+    <!-- Exemplo de receber mensagens usando postMessage -->
+    <script>
+        window.addEventListener('message', (event) => {
+            if (event.origin === window.location.origin) {
+                console.log('Mensagem recebida:', event.data);
+                document.querySelector('p').innerText = `Bem-vindo ao SIMGEs! Mensagem: ${event.data.msg}`;
+            }
+        });
+    </script>
+
 </body>
 </html>
