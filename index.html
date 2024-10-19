@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -13,11 +14,11 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-image: url('fundo.png'); /* Atualizado para usar a nova imagem de fundo */
+            background-image: url('fundo.png'); /* Imagem de fundo */
             background-size: cover;
             background-position: center;
             display: flex;
-            justify-content: flex-end;
+            justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
@@ -26,10 +27,24 @@
             background-color: rgba(255, 255, 255, 0.9);
             border-radius: 10px;
             padding: 2rem;
-            margin-right: 5rem;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             text-align: center;
             max-width: 400px;
+        }
+        .header {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            text-align: right;
+            color: white;
+        }
+        .header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        .header p {
+            margin: 0;
+            font-size: 0.8rem;
         }
         h1 {
             color: #333;
@@ -57,39 +72,46 @@
     </style>
 </head>
 <body>
-    <div class="logo">
+    <div class="header">
         <h2>SIMGES - SimLab</h2>
         <p>powered by MK</p>
     </div>
     <div class="container">
         <h1>Acesso Biométrico</h1>
-        <button onclick="openModal()">Iniciar</button>
+        <button onclick="startRecognition()">ENTRAR</button>
+        <button onclick="registerBiometric()">REGISTRE-SE</button>
     </div>
 
     <!-- Modal (Janela Suspensa) -->
     <div id="cameraModal" class="modal" style="display: none;">
         <div class="modal-content">
             <span class="close" onclick="closeModal()">&times;</span>
-            <h3>Reconhecimento Facial</h3>
+            <h3>Cadastro por Reconhecimento Facial</h3>
             <video id="video" autoplay></video>
             <button id="startCapture" onclick="startCapture()">Iniciar Captura</button>
         </div>
     </div>
 
+    <div id="userInfo" style="display: none;">
+        <h1>Complete seu cadastro</h1>
+        <input type="text" id="fullName" placeholder="Nome completo">
+        <input type="date" id="birthDate">
+        <input type="text" id="cpf" placeholder="3 primeiros dígitos do CPF" maxlength="3">
+        <button onclick="finishRegistration()">Finalizar</button>
+    </div>
+
     <script>
-        // Função para abrir o modal e iniciar a câmera
+        // Funções do JavaScript para controle de modal e câmera
         function openModal() {
             document.getElementById("cameraModal").style.display = "block";
             startVideo();  // Ativa a câmera ao abrir o modal
         }
 
-        // Função para fechar o modal
         function closeModal() {
             document.getElementById("cameraModal").style.display = "none";
             stopVideo();
         }
 
-        // Função para iniciar o vídeo da câmera
         function startVideo() {
             navigator.mediaDevices.getUserMedia({ video: true })
                 .then(stream => {
@@ -98,7 +120,6 @@
                 .catch(err => console.error("Erro ao acessar a câmera:", err));
         }
 
-        // Função para parar o vídeo da câmera
         function stopVideo() {
             const video = document.getElementById('video');
             const stream = video.srcObject;
@@ -109,12 +130,36 @@
             }
         }
 
-        // Função para iniciar a captura facial
-        function startCapture() {
+        // Iniciar reconhecimento facial ao clicar "ENTRAR"
+        function startRecognition() {
+            openModal(); // Abre a janela da câmera
+            // Adicione a lógica para reconhecimento facial aqui
+        }
+
+        // Registrar biometria ao clicar "REGISTRE-SE"
+        function registerBiometric() {
+            openModal(); // Abre a janela da câmera para registro
+        }
+
+        // Lógica de captura facial, finalizar cadastro e etc. deve ser implementada aqui
+        async function startCapture() {
             alert('Iniciando a captura facial...');
-            // Adicione a lógica de captura facial aqui
+            // Implementar a lógica de captura facial aqui
+        }
+
+        function finishRegistration() {
+            const fullName = document.getElementById('fullName').value;
+            const birthDate = document.getElementById('birthDate').value;
+            const cpf = document.getElementById('cpf').value;
+
+            if (fullName && birthDate && cpf.length === 3) {
+                localStorage.setItem('userInfo', JSON.stringify({ fullName, birthDate, cpf }));
+                alert('Cadastro finalizado com sucesso!');
+                closeModal();
+            } else {
+                alert('Por favor, preencha todos os campos corretamente.');
+            }
         }
     </script>
 </body>
 </html>
-
