@@ -89,6 +89,11 @@ body, html {
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
 
+body {
+    background-image: url('assets/images/k.png');
+    background-size: cover;
+    background-position: center;
+}
 
 .dashboard-box p {
     font-size: 18px;
