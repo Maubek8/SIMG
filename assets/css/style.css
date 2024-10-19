@@ -7,6 +7,9 @@ body {
     margin: 0;
     padding: 0;
     height: 100vh;
+    display: flex;
+    justify-content: flex-end; /* Alinha o conteúdo à direita */
+    align-items: center;
 }
 
 /* Cabeçalho */
@@ -26,7 +29,8 @@ body {
     max-width: 400px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     text-align: center;
-    margin-right: 5rem; /* Mantém alinhamento à direita */
+    margin-right: 20px; /* Ajuste para espaçamento */
+    position: fixed; /* Mantém o container fixo à direita */
 }
 
 /* Títulos */
@@ -58,4 +62,37 @@ button:hover {
     max-width: 400px;
     border-radius: 4px;
     margin-top: 1rem;
+}
+
+/* Estilo do modal */
+.modal {
+    position: fixed; /* Modal fixo */
+    left: 20px; /* Lado esquerdo */
+    top: 50%; /* Centraliza verticalmente */
+    transform: translateY(-50%); /* Centraliza verticalmente */
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000; /* Coloca o modal acima dos outros elementos */
+    padding: 20px; /* Espaçamento interno */
+}
+
+/* Estilo do conteúdo do modal */
+.modal-content {
+    text-align: center; /* Centraliza o texto no modal */
+}
+
+/* Estilo do botão de fechar */
+.close {
+    cursor: pointer;
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
 }
