@@ -4,98 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIMGEs - Acesso</title>
-    <!-- Favicon -->
     <link rel="icon" href="assets/images/m.ico" type="image/x-icon">
     <!-- face-api.js CDN -->
     <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2"></script>
     <!-- Arquivo JS com a lógica de biometria -->
     <script defer src="biometriaIA.js"></script>
-    <!-- Estilos -->
     <link rel="stylesheet" href="assets/css/style.css">
-    <style>
-        /* Adicionar imagem de fundo diretamente na raiz */
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            font-family: Arial, sans-serif;
-            background-image: url('k.png');
-            background-size: cover;
-            background-position: center;
-        }
-
-        .header {
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            text-align: right;
-            color: white;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 24px;
-        }
-
-        .header p {
-            margin: 0;
-            font-size: 12px;
-        }
-
-        /* Estilos da caixa de login */
-        .login-box {
-            position: absolute;
-            top: 50%;
-            right: 20%;
-            transform: translateY(-50%);
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
-            text-align: center;
-            width: 300px;
-        }
-
-        .login-box h2 {
-            margin-bottom: 20px;
-            font-size: 24px;
-            color: #333;
-        }
-
-        .login-box button {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            font-size: 16px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .login-box .login-btn {
-            background-color: #4CAF50;
-            color: white;
-        }
-
-        .login-box .biometria-btn {
-            background-color: #008CBA;
-            color: white;
-        }
-
-        .login-box button:hover {
-            opacity: 0.9;
-        }
-
-        /* Estilos do vídeo */
-        #video {
-            display: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 320px;
-            height: 240px;
-        }
-    </style>
 </head>
 <body>
 
@@ -106,12 +20,19 @@
 
     <div class="login-box">
         <h2>Acesso</h2>
-        <button class="login-btn" onclick="login()">Entrar</button>
-        <button class="biometria-btn" onclick="cadastrarBiometria()">Cadastrar Biometria</button>
+        <button class="login-btn" onclick="openModal()">Iniciar</button>
     </div>
 
-    <!-- Vídeo oculto até ativado para captura facial -->
-    <video id="video" autoplay></video>
+    <!-- Modal (Janela Suspensa) -->
+    <div id="cameraModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3>Reconhecimento Facial</h3>
+            <video id="video" autoplay></video>
+            <button id="start-recognition-btn" class="login-btn" onclick="startRecognition()">Iniciar Reconhecimento</button>
+        </div>
+    </div>
 
 </body>
 </html>
+
