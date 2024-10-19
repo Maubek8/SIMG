@@ -9,7 +9,7 @@ body {
     height: 100vh;
     display: flex;
     justify-content: flex-end; /* Alinha o conteúdo à direita */
-    align-items: center;
+    align-items: center; /* Centraliza verticalmente */
 }
 
 /* Cabeçalho */
@@ -31,6 +31,8 @@ body {
     text-align: center;
     position: fixed; /* Mantém o container fixo à direita */
     right: 20px; /* Distância da borda direita */
+    top: 50%; /* Para centralizar verticalmente na tela */
+    transform: translateY(-50%); /* Compensa a altura do container para alinhamento */
 }
 
 /* Títulos */
@@ -96,4 +98,3 @@ button:hover {
     text-decoration: none;
     cursor: pointer;
 }
-
