@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIMGEs - Acesso</title>
     <link rel="icon" href="assets/images/m.ico" type="image/x-icon">
-    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
-    <script defer src="biometriaIA.js"></script> <!-- Lógica da IA de biometria -->
+    <!-- face-api.js CDN -->
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2"></script>
+    <!-- Arquivo JS com a lógica de biometria -->
+    <script defer src="biometriaIA.js"></script>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
@@ -22,6 +24,7 @@
         <button class="biometria-btn" onclick="cadastrarBiometria()">Cadastrar Biometria</button>
     </div>
 
+    <!-- Vídeo oculto até ativado para captura facial -->
     <video id="video" autoplay></video>
 
 </body>
