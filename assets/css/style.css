@@ -29,8 +29,8 @@ body {
     max-width: 400px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     text-align: center;
-    margin-right: 20px; /* Ajuste para espaçamento */
     position: fixed; /* Mantém o container fixo à direita */
+    right: 20px; /* Distância da borda direita */
 }
 
 /* Títulos */
@@ -96,3 +96,4 @@ button:hover {
     text-decoration: none;
     cursor: pointer;
 }
+
