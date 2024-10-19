@@ -1,0 +1,102 @@
+/* Estilos globais */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+}
+
+.header {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    text-align: right;
+    color: white;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.header p {
+    margin: 0;
+    font-size: 12px;
+}
+
+/* Estilos da caixa de login */
+.login-box {
+    position: absolute;
+    top: 50%;
+    right: 20%;
+    transform: translateY(-50%);
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    width: 300px;
+}
+
+.login-box h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+}
+
+/* Estilo para os botões */
+.login-box button {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.login-box .login-btn {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.login-box .biometria-btn {
+    background-color: #008CBA;
+    color: white;
+}
+
+.login-box button:hover {
+    opacity: 0.9;
+}
+
+/* Estilos do vídeo para captura facial */
+#video {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 320px;
+    height: 240px;
+}
+
+/* Estilos da dashboard (exemplo simples) */
+.dashboard-box {
+    margin: 100px auto;
+    width: 80%;
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.dashboard-box h1 {
+    font-size: 32px;
+    color: #333;
+}
+
+.dashboard-box p {
+    font-size: 18px;
+    color: #666;
+}
