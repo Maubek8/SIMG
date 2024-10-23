@@ -50,11 +50,31 @@
             background-color: #1abc9c;
         }
 
+        /* Dropdown Menu (Abas Suspensas) */
+        .dropdown {
+            display: none;
+            flex-direction: column;
+            padding-left: 20px;
+        }
+
+        .dropdown .submenu-item {
+            padding: 10px;
+            cursor: pointer;
+            background-color: #3d566e;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+
+        .dropdown .submenu-item:hover {
+            background-color: #16a085;
+        }
+
         /* Main Content */
         .main-content {
             flex-grow: 1;
             padding: 20px;
             background-color: #ecf0f1;
+            overflow-y: auto;
         }
 
         .main-content h1 {
@@ -96,12 +116,37 @@
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="logo">SIMGes</div>
+
             <div class="menu-item" onclick="loadContent('overview')">Overview</div>
-            <div class="menu-item" onclick="loadContent('aulas')">Grade de Aulas</div>
-            <div class="menu-item" onclick="loadContent('simulacoes')">Simulações</div>
+            
+            <!-- Grade de Aulas e Simulações com dropdown -->
+            <div class="menu-item" onclick="toggleDropdown('grade-aulas-dropdown')">Grade de Aulas e Simulações &#9662;</div>
+            <div class="dropdown" id="grade-aulas-dropdown">
+                <div class="submenu-item" onclick="loadContent('cronograma')">Cronograma</div>
+                <div class="submenu-item" onclick="loadContent('grade-de-aulas')">Grade de Aulas</div>
+                <div class="submenu-item" onclick="loadContent('simulacoes')">Simulações</div>
+                <div class="submenu-item" onclick="loadContent('historico')">Histórico de Simulações</div>
+                <div class="submenu-item" onclick="loadContent('casos-clinicos')">Casos Clínicos</div>
+            </div>
+
+            <!-- Logística -->
             <div class="menu-item" onclick="loadContent('logistica')">Logística</div>
-            <div class="menu-item" onclick="loadContent('relatorios')">Relatórios</div>
+
+            <!-- Financeiro -->
+            <div class="menu-item" onclick="loadContent('financeiro')">Financeiro</div>
+
+            <!-- Recursos Humanos -->
             <div class="menu-item" onclick="loadContent('recursos-humanos')">Recursos Humanos</div>
+
+            <!-- Relatórios -->
+            <div class="menu-item" onclick="loadContent('relatorios')">Relatórios</div>
+
+            <!-- Satisfação -->
+            <div class="menu-item" onclick="loadContent('satisfacao')">Satisfação</div>
+
+            <!-- Administração Geral -->
+            <div class="menu-item" onclick="loadContent('administracao-geral')">Administração Geral</div>
+
             <div class="footer">© 2024 SIMGes</div>
         </div>
 
@@ -159,6 +204,16 @@
             }
         }
 
+        // Function to toggle dropdown menus
+        function toggleDropdown(id) {
+            const dropdown = document.getElementById(id);
+            if (dropdown.style.display === 'none' || dropdown.style.display === '') {
+                dropdown.style.display = 'flex';
+            } else {
+                dropdown.style.display = 'none';
+            }
+        }
+
         // Function to render example charts using Chart.js
         function renderCharts() {
             const ctx1 = document.getElementById('occupancyChart').getContext('2d');
@@ -207,3 +262,4 @@
     </script>
 </body>
 </html>
+
