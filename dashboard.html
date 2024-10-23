@@ -1,27 +1,209 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Controle</title>
-    <link rel="icon" href="assets/images/m.ico" type="image/x-icon">
-    <link rel="stylesheet" href="assets/css/style.css">
+    <title>SIMGes - Dashboard</title>
+    <style>
+        /* Global Styles */
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background-color: #2c3e50;
+            color: #fff;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar .logo {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .sidebar .menu-item {
+            padding: 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            background-color: #34495e;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .sidebar .menu-item:hover {
+            background-color: #1abc9c;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            background-color: #ecf0f1;
+        }
+
+        .main-content h1 {
+            color: #34495e;
+            font-size: 28px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .dashboard-item {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-container {
+            height: 250px;
+            width: 100%;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: auto;
+            color: #bdc3c7;
+            text-align: center;
+            font-size: 14px;
+        }
+
+    </style>
 </head>
 <body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">SIMGes</div>
+            <div class="menu-item" onclick="loadContent('overview')">Overview</div>
+            <div class="menu-item" onclick="loadContent('aulas')">Grade de Aulas</div>
+            <div class="menu-item" onclick="loadContent('simulacoes')">Simulações</div>
+            <div class="menu-item" onclick="loadContent('logistica')">Logística</div>
+            <div class="menu-item" onclick="loadContent('relatorios')">Relatórios</div>
+            <div class="menu-item" onclick="loadContent('recursos-humanos')">Recursos Humanos</div>
+            <div class="footer">© 2024 SIMGes</div>
+        </div>
 
-    <div class="header">
-        <h1>Painel de Controle</h1>
-        <p>Bem-vindo ao SIMGEs!</p>
+        <!-- Main Content -->
+        <div class="main-content" id="content">
+            <h1>Bem-vindo ao Dashboard SIMGes</h1>
+            <p>Escolha uma seção do menu à esquerda para começar.</p>
+
+            <!-- Example of a Dashboard Layout -->
+            <div class="dashboard-grid">
+                <div class="dashboard-item">
+                    <h3>Ocupação de Salas</h3>
+                    <div class="chart-container">
+                        <canvas id="occupancyChart"></canvas>
+                    </div>
+                </div>
+                <div class="dashboard-item">
+                    <h3>Atendimentos por Módulos</h3>
+                    <div class="chart-container">
+                        <canvas id="modulesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <!-- JavaScript for Charts and Interactivity -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        window.addEventListener('message', (event) => {
-            if (event.origin === window.location.origin) {
-                console.log('Mensagem recebida:', event.data);
-                document.querySelector('p').innerText = `Bem-vindo ao SIMGEs! Mensagem: ${event.data.msg}`;
+        // Function to load different content when clicking on menu items
+        function loadContent(section) {
+            const content = document.getElementById('content');
+            if (section === 'overview') {
+                content.innerHTML = `
+                    <h1>Visão Geral</h1>
+                    <p>Gráficos de resumo e principais métricas.</p>
+                    <div class="dashboard-grid">
+                        <div class="dashboard-item">
+                            <h3>Ocupação de Salas</h3>
+                            <div class="chart-container">
+                                <canvas id="occupancyChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="dashboard-item">
+                            <h3>Atendimentos por Módulos</h3>
+                            <div class="chart-container">
+                                <canvas id="modulesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                renderCharts(); // Re-render charts
+            } else {
+                content.innerHTML = `<h1>Seção ${section.replace('-', ' ')}</h1><p>Conteúdo para ${section}.</p>`;
             }
-        });
-    </script>
+        }
 
+        // Function to render example charts using Chart.js
+        function renderCharts() {
+            const ctx1 = document.getElementById('occupancyChart').getContext('2d');
+            const occupancyChart = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['Sala 1', 'Sala 2', 'Sala 3', 'Sala 4'],
+                    datasets: [{
+                        label: 'Ocupação (%)',
+                        data: [85, 75, 90, 65],
+                        backgroundColor: '#1abc9c'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            const ctx2 = document.getElementById('modulesChart').getContext('2d');
+            const modulesChart = new Chart(ctx2, {
+                type: 'pie',
+                data: {
+                    labels: ['Emergência', 'UTI', 'Centro Cirúrgico', 'Farmácia'],
+                    datasets: [{
+                        label: 'Atendimentos',
+                        data: [30, 25, 20, 25],
+                        backgroundColor: ['#3498db', '#9b59b6', '#e74c3c', '#2ecc71']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        // Initial rendering of charts
+        renderCharts();
+    </script>
 </body>
 </html>
