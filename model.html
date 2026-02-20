@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>OBJ → Slices → 24 Rays (Operador Geométrico + Chaikin)</title>
+  <style>
+    body{font-family:ui-monospace,Menlo,Consolas,monospace;background:#0f1115;color:#d7d7d7;margin:0}
+    header{padding:14px 16px;border-bottom:1px solid #222}
+    .row{display:flex;gap:10px;flex-wrap:wrap;padding:14px 16px}
+    label{font-size:12px;color:#9aa3ad;display:flex;flex-direction:column;gap:6px}
+    input,button,select{background:#151a22;color:#eaeaea;border:1px solid #2a2f3a;border-radius:8px;padding:10px 12px}
+    button{cursor:pointer;font-weight:700}
+    button:disabled{opacity:.5;cursor:not-allowed}
+    .log{padding:14px 16px;border-top:1px solid #222;white-space:pre-wrap;font-size:12px;color:#b9c0c8;max-height:320px;overflow-y:auto}
+    .hint{color:#7f8a96;font-size:12px;padding:0 16px 16px}
+
+    /* API Key Modal */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;align-items:center;justify-content:center}
+    .modal-overlay.active{display:flex}
+    .modal{background:#1a1e27;border:1px solid #2a2f3a;border-radius:12px;padding:24px;width:420px;max-width:90vw}
+    .modal h3{margin:0 0 16px;font-size:15px;color:#eaeaea}
+    .modal label{margin-bottom:10px}
+    .modal input,.modal select{width:100%;box-sizing:border-box}
+    .modal .btn-row{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
+    .modal button{padding:8px 18px;font-size:13px}
+    .modal .btn-cancel{background:transparent;border:1px solid #333}
+    .modal .btn-save{background:#2563eb;border:1px solid #3b82f6;color:#fff}
+
+    .chat-box{display:none;border-top:1px solid #222;padding:14px 16px}
+    .chat-box.active{display:block}
+    .chat-messages{max-height:250px;overflow-y:auto;margin-bottom:10px;font-size:12px}
+    .chat-messages .msg{padding:6px 0;border-bottom:1px solid #1a1e27}
+    .chat-messages .msg.user{color:#60a5fa}
+    .chat-messages .msg.ai{color:#a3e635}
+    .chat-input-row{display:flex;gap:8px}
+    .chat-input-row input{flex:1}
+    .badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;margin-left:8px}
+    .badge.on{background:#166534;color:#4ade80}
+    .badge.off{background:#7f1d1d;color:#fca5a5}
+  </style>
+</head>
+<body>
+<header>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+    <div>
+      <div style="font-weight:800">Operador geométrico — OBJ → fatias → 24 raios <span style="color:#7f8a96;font-weight:700">(+ Chaikin spline fechada)</span></div>
+      <div style="font-size:12px;color:#7f8a96;margin-top:6px">
+        0°=+X (flanco direito), 90°=+Z (frente), CCW. Saída: {y,cx,cz,r[24]}.
+      </div>
+    </div>
+    <button id="btnApiKey" style="font-size:12px;padding:8px 14px">⚙ API Key</button>
+  </div>
+</header>
+
+<div class="row">
+  <label>
+    OBJ
+    <input id="file" type="file" accept=".obj" />
+  </label>
+
+  <label>
+    dy (m)
+    <input id="dy" type="number" step="0.001" value="0.008" />
+  </label>
+
+  <label>
+    RAYS
+    <select id="rays">
+      <option value="24" selected>24</option>
+      <option value="32">32</option>
+      <option value="16">16</option>
+    </select>
+  </label>
+
+  <label>
+    Chaikin iterações
+    <select id="chaikin">
+      <option value="0">0 (off)</option>
+      <option value="1">1</option>
+      <option value="2" selected>2</option>
+      <option value="3">3</option>
+    </select>
+  </label>
+
+  <label>
+    yMin (m) (opcional)
+    <input id="ymin" type="number" step="0.001" placeholder="auto" />
+  </label>
+
+  <label>
+    yMax (m) (opcional)
+    <input id="ymax" type="number" step="0.001" placeholder="auto" />
+  </label>
+
+  <label>
+    Scale alvo altura (m)
+    <input id="H" type="number" step="0.01" value="1.75" />
+  </label>
+
+  <label>
+    Centro/escala
+    <select id="norm">
+      <option value="auto" selected>Auto (centraliza + escala p/ H)</option>
+      <option value="center">Só centraliza</option>
+      <option value="none">Nada</option>
+    </select>
+  </label>
+
+  <div style="display:flex;align-items:flex-end;gap:10px">
+    <button id="run" disabled>Extrair JSON</button>
+    <button id="dl" disabled>Baixar JSON</button>
+    <button id="btnChat" disabled>💬 Chat</button>
+  </div>
+</div>
+
+<div class="hint">
+  Dica: se seu OBJ já está em metros e alinhado, use “Nada”. Se veio do Blender em unidades arbitrárias, use “Auto”.
+  <span id="apiStatus"></span>
+</div>
+
+<div class="log" id="log">Log…</div>
+
+<div class="chat-box" id="chatBox">
+  <div style="font-weight:700;font-size:13px;margin-bottom:8px">Chat — assistente do projeto</div>
+  <div class="chat-messages" id="chatMessages"></div>
+  <div class="chat-input-row">
+    <input id="chatInput" type="text" placeholder="Pergunte sobre o JSON, fatias, raios…" />
+    <button id="chatSend">Enviar</button>
+  </div>
+</div>
+
+<!-- Modal API Key -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3>⚙ Configurar API Key</h3>
+    <label>
+      Motor / Provider
+      <select id="apiProvider">
+        <option value="deepseek">DeepSeek</option>
+        <option value="openai">OpenAI</option>
+        <option value="anthropic">Anthropic (Claude)</option>
+      </select>
+    </label>
+    <label>
+      API Key
+      <input id="apiKeyInput" type="password" placeholder="sk-..." />
+    </label>
+    <div style="font-size:11px;color:#7f8a96;margin-top:6px">
+      A chave é criptografada localmente (AES-GCM) e salva apenas neste navegador.
+    </div>
+    <div class="btn-row">
+      <button class="btn-cancel" id="modalCancel">Cancelar</button>
+      <button class="btn-cancel" id="modalClear">Limpar chave</button>
+      <button class="btn-save" id="modalSave">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- three + OBJLoader -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.128/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/loaders/OBJLoader.js"></script>
+
+<script>
+/* ===================== UI ===================== */
+const $ = (id)=>document.getElementById(id);
+const logEl = $("log");
+function log(msg){ logEl.textContent = msg + "\n\n" + logEl.textContent; }
+let LAST_JSON = null;
+
+$("file").addEventListener("change", ()=> {
+  $("run").disabled = !$("file").files?.[0];
+  $("dl").disabled = true;
+  LAST_JSON = null;
+  log("Arquivo selecionado. Pronto para extrair.");
+});
+
+/* ===================== CRYPTO (API KEY) ===================== */
+const CRYPTO_KEY_NAME = "geo_op_aes_key";
+const STORE_PREFIX = "geo_op_";
+
+async function getCryptoKey(){
+  const raw = sessionStorage.getItem(CRYPTO_KEY_NAME);
+  if(raw){
+    const jwk = JSON.parse(raw);
+    return crypto.subtle.importKey("jwk", jwk, {name:"AES-GCM"}, true, ["encrypt","decrypt"]);
+  }
+  const key = await crypto.subtle.generateKey({name:"AES-GCM",length:256}, true, ["encrypt","decrypt"]);
+  const jwk = await crypto.subtle.exportKey("jwk", key);
+  sessionStorage.setItem(CRYPTO_KEY_NAME, JSON.stringify(jwk));
+  return key;
+}
+async function encryptAndStore(provider, apiKey){
+  const key = await getCryptoKey();
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const enc = await crypto.subtle.encrypt({name:"AES-GCM",iv}, key, new TextEncoder().encode(apiKey));
+  const payload = {iv:Array.from(iv), data:Array.from(new Uint8Array(enc))};
+  localStorage.setItem(STORE_PREFIX + provider, JSON.stringify(payload));
+}
+async function decryptStored(provider){
+  const raw = localStorage.getItem(STORE_PREFIX + provider);
+  if(!raw) return null;
+  try{
+    const key = await getCryptoKey();
+    const {iv, data} = JSON.parse(raw);
+    const dec = await crypto.subtle.decrypt({name:"AES-GCM",iv:new Uint8Array(iv)}, key, new Uint8Array(data));
+    return new TextDecoder().decode(dec);
+  }catch(e){ return null; }
+}
+function clearStored(provider){ localStorage.removeItem(STORE_PREFIX + provider); }
+function updateApiStatus(){
+  const providers = ["deepseek","openai","anthropic"];
+  const el = $("apiStatus");
+  const parts = providers.map(p=>{
+    const has = !!localStorage.getItem(STORE_PREFIX + p);
+    return `<span class="badge ${has?'on':'off'}">${p}${has?' ✓':' ✗'}</span>`;
+  });
+  el.innerHTML = parts.join(" ");
+  const anyKey = providers.some(p=>!!localStorage.getItem(STORE_PREFIX + p));
+  $("btnChat").disabled = !anyKey && !LAST_JSON;
+}
+
+/* modal */
+$("btnApiKey").addEventListener("click",()=>{ $("modalOverlay").classList.add("active"); });
+$("modalCancel").addEventListener("click",()=>{ $("modalOverlay").classList.remove("active"); });
+$("modalSave").addEventListener("click", async()=>{
+  const prov = $("apiProvider").value;
+  const key = $("apiKeyInput").value.trim();
+  if(!key){ alert("Insira uma chave."); return; }
+  await encryptAndStore(prov, key);
+  $("apiKeyInput").value = "";
+  $("modalOverlay").classList.remove("active");
+  updateApiStatus();
+  log(`API Key ${prov} salva (criptografada).`);
+});
+$("modalClear").addEventListener("click",()=>{
+  const prov = $("apiProvider").value;
+  clearStored(prov);
+  updateApiStatus();
+  log(`API Key ${prov} removida.`);
+});
+
+/* ===================== OBJ CORE ===================== */
+function computeBounds(positions){
+  let minX=Infinity,minY=Infinity,minZ=Infinity,maxX=-Infinity,maxY=-Infinity,maxZ=-Infinity;
+  for(let i=0;i<positions.length;i+=3){
+    const x=positions[i], y=positions[i+1], z=positions[i+2];
+    if(x<minX)minX=x; if(y<minY)minY=y; if(z<minZ)minZ=z;
+    if(x>maxX)maxX=x; if(y>maxY)maxY=y; if(z>maxZ)maxZ=z;
+  }
+  return {minX,minY,minZ,maxX,maxY,maxZ, sizeY:(maxY-minY)};
+}
+
+function extractPositionsFromOBJ(objRoot){
+  const arr = [];
+  objRoot.traverse((c)=>{
+    if(!c.isMesh) return;
+    const g = c.geometry;
+    const pos = g.attributes.position;
+    if(!pos) return;
+    for(let i=0;i<pos.count;i++){
+      arr.push(pos.getX(i), pos.getY(i), pos.getZ(i));
+    }
+  });
+  return new Float32Array(arr);
+}
+
+function normalizePositions(pos, mode, targetH){
+  const b = computeBounds(pos);
+  const cx = (b.minX+b.maxX)/2;
+  const cz = (b.minZ+b.maxZ)/2;
+  const y0 = b.minY;
+
+  // sempre centraliza (se mode != none)
+  for(let i=0;i<pos.length;i+=3){
+    pos[i]   -= cx;
+    pos[i+1] -= y0;
+    pos[i+2] -= cz;
+  }
+
+  if(mode==="auto"){
+    const b2 = computeBounds(pos);
+    const s = (b2.sizeY > 1e-9) ? (targetH / b2.sizeY) : 1.0;
+    for(let i=0;i<pos.length;i+=3){
+      pos[i]*=s; pos[i+1]*=s; pos[i+2]*=s;
+    }
+    return {scale:s};
+  }
+  return {scale:1};
+}
+
+/* ===================== GEOMETRY OPERATOR ===================== */
+
+/** Chaikin para polilinha fechada (spline suave). */
+function chaikinClosed(poly, iters=2){
+  // poly: [[x,z], ...] fechado (não repetir o primeiro)
+  let pts = poly.slice();
+  for(let it=0; it<iters; it++){
+    const out = [];
+    const n = pts.length;
+    for(let i=0;i<n;i++){
+      const p0 = pts[i];
+      const p1 = pts[(i+1)%n];
+      // Q = 0.75 p0 + 0.25 p1
+      const qx = 0.75*p0[0] + 0.25*p1[0];
+      const qz = 0.75*p0[1] + 0.25*p1[1];
+      // R = 0.25 p0 + 0.75 p1
+      const rx = 0.25*p0[0] + 0.75*p1[0];
+      const rz = 0.25*p0[1] + 0.75*p1[1];
+      out.push([qx,qz],[rx,rz]);
+    }
+    pts = out;
+  }
+  return pts;
+}
+
+/**
+ * Constrói uma "casca" ordenada por ângulo em torno do centro e suaviza com Chaikin.
+ * Isso não é fotogrametria nem concave-hull pesado — mas já elimina a “casca inflada” do max-radius.
+ */
+function orderedContour(points, cx, cz){
+  // points: [[x,z], ...]
+  // ordena por ângulo; remove duplicatas grosseiras
+  const tmp = points.map(p=>{
+    const dx=p[0]-cx, dz=p[1]-cz;
+    return {x:p[0], z:p[1], a:Math.atan2(dz,dx)};
+  }).sort((a,b)=>a.a-b.a);
+
+  // downsample simples para evitar 20k pontos em uma fatia
+  const out = [];
+  const stride = Math.max(1, Math.floor(tmp.length / 800)); // limita ~800 pts
+  for(let i=0;i<tmp.length;i+=stride) out.push([tmp[i].x, tmp[i].z]);
+  return out;
+}
+
+/**
+ * Gera raios anatômicos: para cada ângulo alvo, encontra a interseção na curva fechada,
+ * fazendo lookup no ponto da curva com ângulo mais próximo (e interpolando).
+ */
+function polarRaysFromClosedCurve(curve, cx, cz, rays){
+  // curve: [[x,z], ...] fechado implicitamente
+  const DA = (Math.PI*2)/rays;
+
+  // cria lista com ângulo polar e fecha o loop duplicando primeiro com +2π
+  const ordered = curve.map(p=>{
+    const dx=p[0]-cx, dz=p[1]-cz;
+    let a=Math.atan2(dz,dx);
+    if(a<0) a+=Math.PI*2;
+    return {x:p[0], z:p[1], a};
+  }).sort((a,b)=>a.a-b.a);
+
+  // garante que a lista tem variedade de ângulos
+  if(ordered.length < 8){
+    return new Array(rays).fill(0.001);
+  }
+
+  const first = ordered[0];
+  ordered.push({x:first.x, z:first.z, a:first.a + Math.PI*2});
+
+  const R = new Array(rays).fill(0.001);
+
+  // walk-pointer: como ang aumenta monotonicamente, a busca é O(n)
+  let j=0;
+  for(let i=0;i<rays;i++){
+    const ang = i*DA;
+    while(j < ordered.length-2 && ang > ordered[j+1].a) j++;
+
+    const p0 = ordered[j];
+    const p1 = ordered[j+1];
+    const denom = (p1.a - p0.a) || 1e-6;
+    const t = (ang - p0.a) / denom;
+
+    const x = p0.x + t*(p1.x - p0.x);
+    const z = p0.z + t*(p1.z - p0.z);
+
+    R[i] = Math.max(0.001, Math.hypot(x-cx, z-cz));
+  }
+  return R;
+}
+
+function buildSlicesFromPositions(pos, dy, rays, yMinOpt, yMaxOpt, chaikinIters){
+  const b = computeBounds(pos);
+  const yMin = Number.isFinite(yMinOpt)?yMinOpt:b.minY;
+  const yMax = Number.isFinite(yMaxOpt)?yMaxOpt:b.maxY;
+
+  // bucket por fatia (k = round(y/dy))
+  const buckets = new Map();
+  for(let i=0;i<pos.length;i+=3){
+    const x=pos[i], y=pos[i+1], z=pos[i+2];
+    if(y<yMin || y>yMax) continue;
+    const k = Math.round(y/dy);
+    if(!buckets.has(k)) buckets.set(k,[]);
+    buckets.get(k).push([x,z]);
+  }
+
+  const keys=[...buckets.keys()].sort((a,b)=>a-b);
+  const slices=[];
+
+  for(const k of keys){
+    const pts=buckets.get(k);
+    if(!pts || pts.length < 60) continue;
+
+    // centro real (média)
+    let cx=0,cz=0;
+    for(const p of pts){cx+=p[0];cz+=p[1];}
+    cx/=pts.length; cz/=pts.length;
+
+    // contorno ordenado + Chaikin
+    let contour = orderedContour(pts, cx, cz);
+    if(chaikinIters > 0) contour = chaikinClosed(contour, chaikinIters);
+
+    // raios a partir da curva fechada
+    const r = polarRaysFromClosedCurve(contour, cx, cz, rays);
+
+    slices.push({
+      y: k*dy,
+      cx, cz,
+      r: r.map(v=>+v.toFixed(5))
+    });
+  }
+  return slices;
+}
+
+/* ===================== RUN ===================== */
+async function loadOBJFromFile(file){
+  const text = await file.text();
+  const loader = new THREE.OBJLoader();
+  return loader.parse(text);
+}
+
+$("run").addEventListener("click", async ()=>{
+  try{
+    $("run").disabled = true;
+    $("dl").disabled = true;
+    LAST_JSON = null;
+    log("Carregando OBJ…");
+
+    const file = $("file").files[0];
+    const dy = parseFloat($("dy").value || "0.008");
+    const rays = parseInt($("rays").value || "24", 10);
+    const H = parseFloat($("H").value || "1.75");
+    const norm = $("norm").value;
+
+    const chaikinIters = parseInt($("chaikin").value || "2", 10);
+
+    const yMinRaw = $("ymin").value.trim();
+    const yMaxRaw = $("ymax").value.trim();
+    const yMinOpt = yMinRaw==="" ? NaN : parseFloat(yMinRaw);
+    const yMaxOpt = yMaxRaw==="" ? NaN : parseFloat(yMaxRaw);
+
+    const obj = await loadOBJFromFile(file);
+    let pos = extractPositionsFromOBJ(obj);
+    if(pos.length < 3) throw new Error("Não encontrei vértices no OBJ.");
+    log(`Vértices extraídos: ${(pos.length/3).toLocaleString()}`);
+
+    if(norm !== "none"){
+      const info = normalizePositions(pos, norm, H);
+      log(`Normalização: ${norm} | scale=${info.scale.toFixed(6)}`);
+    } else {
+      log("Normalização: none");
+    }
+
+    const b = computeBounds(pos);
+    log(`Bounds Y: ${b.minY.toFixed(3)} → ${b.maxY.toFixed(3)} (altura=${b.sizeY.toFixed(3)} m)`);
+
+    const slices = buildSlicesFromPositions(pos, dy, rays, yMinOpt, yMaxOpt, chaikinIters);
+    log(`Fatias geradas: ${slices.length} (dy=${dy} m, rays=${rays}, chaikin=${chaikinIters})`);
+
+    if(slices.length < 10){
+      log("⚠️ Poucas fatias. Tente: dy maior (0.01), ou diminua yMin/yMax, ou use norm=auto.");
+    }
+
+    const heightUsed = b.sizeY;
+    const out = {
+      model: "extracted_from_obj_chaikin",
+      H: (norm==="auto" ? H : heightUsed),
+      dy,
+      rays,
+      chaikinIters,
+      ray0: "right_flank_0deg_CCW",
+      slices: slices.map(s=>({
+        y: (norm==="auto" ? (s.y/H) : (s.y/heightUsed)),
+        cx: +s.cx.toFixed(6),
+        cz: +s.cz.toFixed(6),
+        r: s.r
+      }))
+    };
+
+    LAST_JSON = out;
+    $("dl").disabled = false;
+    $("btnChat").disabled = false;
+    log("OK: JSON pronto. Clique em “Baixar JSON”.");
+  }catch(e){
+    log("ERRO: " + e.message);
+  }finally{
+    $("run").disabled = false;
+  }
+});
+
+$("dl").addEventListener("click", ()=>{
+  if(!LAST_JSON) return;
+  const blob = new Blob([JSON.stringify(LAST_JSON, null, 2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "obj_slices_rays_chaikin.json";
+  a.click();
+});
+
+/* ===================== CHAT (opcional) ===================== */
+let chatVisible = false;
+$("btnChat").addEventListener("click",()=>{
+  chatVisible = !chatVisible;
+  $("chatBox").classList.toggle("active", chatVisible);
+});
+
+const ENDPOINTS = {
+  deepseek: { url:"https://api.deepseek.com/v1/chat/completions", model:"deepseek-chat" },
+  openai:   { url:"https://api.openai.com/v1/chat/completions", model:"gpt-4o-mini" },
+  anthropic:{ url:"https://api.anthropic.com/v1/messages", model:"claude-sonnet-4-20250514" }
+};
+
+async function getActiveProvider(){
+  for(const p of ["deepseek","openai","anthropic"]){
+    const key = await decryptStored(p);
+    if(key) return {provider:p, key};
+  }
+  return null;
+}
+
+async function chatCompletion(userMsg){
+  const active = await getActiveProvider();
+  if(!active) return "Nenhuma API Key configurada. Clique em ⚙ API Key.";
+
+  const {provider, key} = active;
+  const ep = ENDPOINTS[provider];
+
+  const sys = `Você é um assistente técnico do Operador Geométrico OBJ→Slices→Rays.
+O usuário extraiu JSON de fatias (y,cx,cz,r[${LAST_JSON?.rays||24}]).
+Responda curto, técnico e prático.
+Resumo do JSON atual: ${LAST_JSON ? JSON.stringify({H:LAST_JSON.H, dy:LAST_JSON.dy, rays:LAST_JSON.rays, chaikinIters:LAST_JSON.chaikinIters, totalSlices:LAST_JSON.slices?.length, sampleSlice:LAST_JSON.slices?.[0]}) : "nenhum"} .`;
+
+  try{
+    if(provider === "anthropic"){
+      const res = await fetch(ep.url, {
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json",
+          "x-api-key":key,
+          "anthropic-version":"2023-06-01",
+          "anthropic-dangerous-direct-browser-access":"true"
+        },
+        body:JSON.stringify({model:ep.model, max_tokens:900, system:sys, messages:[{role:"user",content:userMsg}]})
+      });
+      const data = await res.json();
+      return data.content?.[0]?.text || (data.error?.message || JSON.stringify(data));
+    } else {
+      const res = await fetch(ep.url, {
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json",
+          "Authorization":"Bearer "+key
+        },
+        body:JSON.stringify({model:ep.model, max_tokens:900, messages:[{role:"system",content:sys},{role:"user",content:userMsg}]})
+      });
+      const data = await res.json();
+      return data.choices?.[0]?.message?.content || (data.error?.message || JSON.stringify(data));
+    }
+  }catch(e){
+    return "Erro: " + e.message;
+  }
+}
+
+function addChatMsg(role, text){
+  const el = document.createElement("div");
+  el.className = "msg " + role;
+  el.textContent = (role==="user"?"▶ ":"◀ ") + text;
+  $("chatMessages").appendChild(el);
+  $("chatMessages").scrollTop = $("chatMessages").scrollHeight;
+}
+
+$("chatSend").addEventListener("click", async()=>{
+  const msg = $("chatInput").value.trim();
+  if(!msg) return;
+  $("chatInput").value = "";
+  addChatMsg("user", msg);
+  addChatMsg("ai", "…");
+  const reply = await chatCompletion(msg);
+  $("chatMessages").lastChild.textContent = "◀ " + reply;
+});
+$("chatInput").addEventListener("keydown",(e)=>{ if(e.key==="Enter") $("chatSend").click(); });
+
+/* init */
+updateApiStatus();
+</script>
+</body>
+</html>
+```0
