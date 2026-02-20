@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8"/>
+<title>Gesso 3D — Chaikin Loft</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>
+html,body{margin:0;height:100%;background:#0e1116;color:#ddd;font-family:monospace}
+#ui{position:fixed;top:10px;left:10px;z-index:10}
+button{padding:8px 12px;border-radius:6px;border:1px solid #333;background:#1a1f2a;color:#fff;font-weight:700;cursor:pointer}
+canvas{display:block}
+</style>
+</head>
+<body>
+
+<div id="ui">
+  <button id="load">Carregar JSON</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.152/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.152/examples/js/controls/OrbitControls.js"></script>
+
+<script>
+/* ================== CONFIG ================== */
+const CHAikin_ITERS = 2;
+
+/* ================== SCENE ================== */
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0e1116);
+
+const camera = new THREE.PerspectiveCamera(50, innerWidth/innerHeight, 0.01, 10);
+camera.position.set(0,1.0,2.2);
+
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth, innerHeight);
+document.body.appendChild(renderer.domElement);
+
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+scene.add(new THREE.AmbientLight(0xffffff,0.6));
+const dl = new THREE.DirectionalLight(0xffffff,0.6);
+dl.position.set(1,2,2);
+scene.add(dl);
+
+/* ================== MATH ================== */
+function chaikin(points){
+  let pts = points.slice();
+  for(let k=0;k<CHAikin_ITERS;k++){
+    const out=[];
+    for(let i=0;i<pts.length;i++){
+      const p0 = pts[i];
+      const p1 = pts[(i+1)%pts.length];
+      out.push(
+        p0.clone().multiplyScalar(0.75).add(p1.clone().multiplyScalar(0.25)),
+        p0.clone().multiplyScalar(0.25).add(p1.clone().multiplyScalar(0.75))
+      );
+    }
+    pts = out;
+  }
+  return pts;
+}
+
+/* ================== GEOMETRY ================== */
+function sliceToCurve(slice){
+  const pts=[];
+  const n = slice.r.length;
+  for(let i=0;i<n;i++){
+    const a = i/n * Math.PI*2;
+    pts.push(new THREE.Vector3(
+      slice.cx + Math.cos(a)*slice.r[i],
+      slice.y,
+      slice.cz + Math.sin(a)*slice.r[i]
+    ));
+  }
+  return chaikin(pts);
+}
+
+function loft(curves){
+  const rows = curves.length;
+  const cols = curves[0].length;
+
+  const positions=[];
+  const indices=[];
+
+  for(let i=0;i<rows;i++){
+    for(let j=0;j<cols;j++){
+      const p = curves[i][j];
+      positions.push(p.x,p.y,p.z);
+    }
+  }
+
+  for(let i=0;i<rows-1;i++){
+    for(let j=0;j<cols;j++){
+      const a = i*cols + j;
+      const b = i*cols + (j+1)%cols;
+      const c = (i+1)*cols + j;
+      const d = (i+1)*cols + (j+1)%cols;
+      indices.push(a,c,b, b,c,d);
+    }
+  }
+
+  const g = new THREE.BufferGeometry();
+  g.setIndex(indices);
+  g.setAttribute('position', new THREE.Float32BufferAttribute(positions,3));
+  g.computeVertexNormals();
+  return g;
+}
+
+/* ================== LOAD ================== */
+async function buildFromJSON(){
+  const res = await fetch('obj_slices_rays_chaikin.json');
+  const data = await res.json();
+
+  const curves = data.slices.map(sliceToCurve);
+  const geom = loft(curves);
+
+  const mat = new THREE.MeshStandardMaterial({
+    color:0xe6e6e6,
+    roughness:0.35,
+    metalness:0.05,
+    side:THREE.DoubleSide
+  });
+
+  const mesh = new THREE.Mesh(geom,mat);
+  scene.add(mesh);
+}
+
+document.getElementById('load').onclick = buildFromJSON;
+
+/* ================== LOOP ================== */
+function animate(){
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene,camera);
+}
+animate();
+
+window.addEventListener('resize',()=>{
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+});
+</script>
+</body>
+</html>
