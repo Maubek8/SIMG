@@ -7,14 +7,14 @@
 <style>
 html,body{margin:0;height:100%;background:#0e1116;color:#ddd;font-family:monospace}
 #ui{position:fixed;top:10px;left:10px;z-index:10}
-button{padding:8px 12px;border-radius:6px;border:1px solid #333;background:#1a1f2a;color:#fff;font-weight:700;cursor:pointer}
+button,input{padding:8px 12px;border-radius:6px;border:1px solid #333;background:#1a1f2a;color:#fff;font-weight:700}
 canvas{display:block}
 </style>
 </head>
 <body>
 
 <div id="ui">
-  <button id="load">Carregar JSON</button>
+  <input type="file" id="file" accept=".json"/>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.152/build/three.min.js"></script>
@@ -22,14 +22,14 @@ canvas{display:block}
 
 <script>
 /* ================== CONFIG ================== */
-const CHAikin_ITERS = 2;
+const CHAIKIN_ITERS = 2;
 
 /* ================== SCENE ================== */
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0e1116);
 
 const camera = new THREE.PerspectiveCamera(50, innerWidth/innerHeight, 0.01, 10);
-camera.position.set(0,1.0,2.2);
+camera.position.set(0,1.1,2.3);
 
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(innerWidth, innerHeight);
@@ -43,10 +43,10 @@ const dl = new THREE.DirectionalLight(0xffffff,0.6);
 dl.position.set(1,2,2);
 scene.add(dl);
 
-/* ================== MATH ================== */
+/* ================== CHAikin ================== */
 function chaikin(points){
   let pts = points.slice();
-  for(let k=0;k<CHAikin_ITERS;k++){
+  for(let k=0;k<CHAIKIN_ITERS;k++){
     const out=[];
     for(let i=0;i<pts.length;i++){
       const p0 = pts[i];
@@ -108,25 +108,29 @@ function loft(curves){
 }
 
 /* ================== LOAD ================== */
-async function buildFromJSON(){
-  const res = await fetch('obj_slices_rays_chaikin.json');
-  const data = await res.json();
+document.getElementById('file').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+
+  const txt = await file.text();
+  const data = JSON.parse(txt);
 
   const curves = data.slices.map(sliceToCurve);
   const geom = loft(curves);
 
   const mat = new THREE.MeshStandardMaterial({
-    color:0xe6e6e6,
+    color:0xe8e8e8,
     roughness:0.35,
     metalness:0.05,
     side:THREE.DoubleSide
   });
 
   const mesh = new THREE.Mesh(geom,mat);
+  scene.clear();
   scene.add(mesh);
-}
-
-document.getElementById('load').onclick = buildFromJSON;
+  scene.add(new THREE.AmbientLight(0xffffff,0.6));
+  scene.add(dl);
+});
 
 /* ================== LOOP ================== */
 function animate(){
